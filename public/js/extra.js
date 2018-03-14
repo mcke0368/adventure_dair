@@ -9,58 +9,19 @@ $(document).ready(function() {
         addCertification(cert, expiration, link);
     });
 
-    $('#signup-form').submit(function (e) {
-        e.preventDefault();
-        var firstname = $('#inputfirstname').val();
-        var lastname = $('#inputlastname').val();
-        var username = $('#inputUsername').val();
-        var email = $('#emailInput').val();
-        var password = $('#passwordInput').val();
-
-        createUser(firstname, lastname, username, email, password);
-    });
-
     $('#send-all-data').click(function(){
         getAllFields();    
     });
 
-    $("#b1").click(function() {
-      window.location.href="login";
-    });
-
+    /* setup AJAX by adding csrf token to each request */
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
 
-    $('#loginForm').submit(function(e) {
-        var email = $("#exampleInputEmail1").val();
-        var password = $("#exampleInputPassword1").val();
-        
-        e.preventDefault();
-        $.ajax({
-           type: "POST",
-           url: '/signin',
-           data: { email: email, password: password },
-           success: function(data)
-           {
-                if(data == "true"){
-                    console.log("LOGGED IN VIA AJAX.");
-                    window.location.href = "profile";
-                }
-           }, 
-           error: function(response)
-            {
-                alert('Incorrect Credentials');
-            }
-       });
-     });
-
-    $("#submit-contact").click( function (e) {
-        e.preventDefault();
-        $(".hideme").removeClass("hideme");
-    });
+    /* setup the dropdown links for the menu bar */
+    setup_dropdown_links();
 });
 
 function addCertification(certification_name, expiration, link) {
@@ -85,7 +46,7 @@ function addCertification(certification_name, expiration, link) {
     //call an ajax enter this into the DB
     $.ajax({
         type: "POST",
-        url: '/updateCerts',
+        url: '/ajaxUpdateCerts',
         data: { name: certification_name, link: link, expiry:expiration },    
     })
     .done(function(msg) {
@@ -109,7 +70,7 @@ function getAllFields() {
     //call an ajax enter this into the DB
     $.ajax({
         type: "POST",
-        url: '/updateProfile',
+        url: '/ajaxUpdateProfile',
         data: { about: about, work: work, employment:employment, training:training },    
     })
     .done(function(msg) {
@@ -121,20 +82,52 @@ function getAllFields() {
     });
 }
 
-function createUser(firstname, lastname, username, email, password) {
-   //call an ajax enter this into the DB
-   $.ajax({
-    type: "POST",
-    url: '/signup',
-    data: { firstname: firstname, lastname: lastname, username:username, email:email, 
-        password:password },    
+
+/********************************************************************************************
+ * Methods for the common dropdown method: profile link, logbooks link and logout
+ *********************************************************************************************/
+
+/* add required callback functions to onclick on the dropdown */
+function setup_dropdown_links() {
+    document.getElementById('dropdown-profile').onclick = dropdown_profile_callback;
+    document.getElementById('dropdown-edit-profile').onclick = dropdown_edit_profile_callback;
+    document.getElementById('dropdown-logbooks').onclick = dropdown_logbooks_callback;
+    document.getElementById('dropdown-logout').onclick = dropdown_logout_callback;
+
+}
+/* callback for the profile link */
+function dropdown_profile_callback() {
+    location.href = "/profile";
+}
+/* callback for the edit profile link */
+function dropdown_edit_profile_callback() {
+    location.href = "/profile/edit";
+}
+/* callback for the logbooks page */
+function dropdown_logbooks_callback() {
+    location.href = "/logbookMainPage";
+}
+/* Logout requires a post request so add this function to the onclick of logout button */
+function dropdown_logout_callback() {
+
+
+    $.ajax({
+        type: "POST",
+        url: '/logout',
+        data: { }
     })
-    .done(function(msg) {
-        console.log(msg);
-        window.location.href = "confirmation";
-    })
-    .fail(function(jqXHR, textStatus) {
-        console.log(jqXHR);
-        console.log( "Request failed: " + textStatus );
-    }); 
+        .done( function(msg) {
+            /* TODO: anything needs to go here? */
+            console.log('dropdown_logout_callback: done');
+        })
+        .fail( function (msg) {
+            /* TODO: if this fails, is there a fallback for logout? */
+            console.log('dropdown_logout_callbad: fail');
+
+        })
+        .success( function(msg) {
+            /* logout successful, redirect to root */
+            console.log('dropdown_logout_callback: success');
+            location.href = '/';
+        });
 }
