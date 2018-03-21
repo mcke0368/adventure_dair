@@ -114,10 +114,16 @@ Route::get('companyLogin', function()
     return view('companyLogin');
 });
 
+Route::get('printlog', function (){
+    return view('logPrintView');
+});
+
 /**********************************************************************************
 * Profile Controller
 **********************************************************************************/
 
+Route::post('/ajaxUpdateWorkExperience','GuideProfileController@ajaxUpdateWorkExperience')->name('ajaxUpdateWorkExperience');
+Route::post('/ajaxUpdateAboutMe','GuideProfileController@ajaxUpdateAboutMe')->name('ajaxUpdateAboutMe');
 Route::post('/ajaxUpdateProfile', 'GuideProfileController@ajaxUpdateProfile')->name('ajaxUpdateProfile');
 Route::post('/ajaxUpdateCerts', 'GuideProfileController@ajaxUpdateCerts')->name('ajaxUpdateCerts');
 Route::get('/profile', 'GuideProfileController@getGuide')->name('profile');
@@ -148,4 +154,7 @@ Route::post('password/email', 'Auth\ForgotPasswordController@sendResetLinkEmail'
 Route::get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm')->name('password.reset');
 Route::post('password/reset', 'Auth\ResetPasswordController@reset');
 
+Route::resource('videos', 'VideoController');
+Route::resource('Reports', 'ReportController', ['only' => ['store', 'show']]);
 
+Route::get('/report', function () { return view('report'); });
